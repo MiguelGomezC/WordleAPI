@@ -79,8 +79,8 @@ class WordleAPI {
 
   def guess(wordc: String): State[WordleState, Word] =
     for {
-      word <- inspect(tablero => evalGuess(tablero.hiddenWord, wordc))
-      _ <- modify(tablero => tablero.copy(table = tablero.table :+ word))
+      word <- inspect((tablero: WordleState) => evalGuess(tablero.hiddenWord, wordc))
+      _ <- modify((tablero: WordleState) => tablero.copy(table = tablero.table :+ word))
     } yield word
 }
 
