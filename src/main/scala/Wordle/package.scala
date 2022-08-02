@@ -1,16 +1,10 @@
-import Wordle.TagState._
 import cats.data.State
 import cats.implicits._
 
-
-package object Wordle {
+package object Wordle extends Implicits {
 
   type Word = IndexedSeq[Letter]
   type Table = IndexedSeq[Word]
-
-  implicit class WordFromString(str: String) {
-    def toBlackWord: Word = str.map((char: Char) => Letter(char, Black))
-  }
 
   /* Data driven computations */
 
@@ -42,22 +36,20 @@ package object Wordle {
   }
 
   implicit class YellowColoredWord(wordc: Word) {
-    def colorItYellow(occurrencesToColor: Map[Letter, Int]): Word = {
+    def colorItYellow(occurrencesToColor: Map[Char, Int]): Word = {
       wordc.toList.traverse {
         (letter: Letter) => State.modify[TagState]{
-          case TagState(tagged: Word, bag: Map[Letter, Int], index: Int) =>
+          case TagState(tagged: Word, bag: Map[Char, Int]) =>
             val isGreen = !letter.color.equals(Green)
-            /* Control driven queda más simple aquí */
             TagState(
               tagged
                 .mapAs(_ :+ letter)
-                .mapIf(isGreen & bag.containsSuch(letter)(_>0))(_ :+ letter.copy(color = Yellow)),
+                .mapIf(isGreen & bag.containsSuch(letter.c)(_>0))(_ :+ letter.copy(color = Yellow)),
               bag
-                .mapIf(isGreen & bag.containsSuch(letter)(_>0))(_ => bag.modify(letter)(_-1)),
-              index
+                .mapIf(isGreen & bag.containsSuch(letter.c)(_>0))(_ => bag.modify(letter.c)(_-1))
             )
         }
-      }.inspect(_.tagged).runA(TagState("".toBlackWord, occurrencesToColor, 0)).value
+      }.inspect(_.tagged).runA(TagState("".toBlackWord, occurrencesToColor)).value
     }
   }
 }

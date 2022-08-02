@@ -6,11 +6,11 @@ case class WordleState(table: Table,
 
 object WordleState {
 
-  def apply(dict: Map[String, String], hiddenWordc: String): WordleState = {
+  def apply(dictc: Map[String, String], hiddenWordc: String): WordleState = {
     /* Set initial state */
     WordleState(
       table = IndexedSeq(hiddenWordc.toBlackWord),
-      dict = dict,
+      dict = dictc,
       hiddenWord = hiddenWordc
     )
   }
