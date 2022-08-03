@@ -10,6 +10,10 @@ trait Implicits {
     def toBlackWord: Word = str.map((char: Char) => Letter(char, Black))
   }
 
+  implicit class StringFromWord(word: Word) {
+    override def toString: String = word.map(_.c).toString
+  }
+
   implicit class greenCheck(letter: Letter) {
     def isGreen: Boolean = letter.color == Green
     def whoseCharIs(charac: Char): Boolean = letter.c == charac

@@ -1,51 +1,26 @@
 package Wordle
 
-import cats.Monad
-import cats.data.{Reader, State}
+import Wordle.WordleAPI.evalGuess
+import cats.data.State
 import cats.data.State.{inspect, modify}
 
-object WordleAPI {
+trait WordleAPI {
 
-  def evalGuess(responseStr: String, candidateStr: String): Word ={
-    /* [G] coincidentes por posición
-    * [Y] Dada una letra, min(conjunto(candidata), conjunto(oculta)) - coloreadas verdes */
-    // READER. igual hasta lo puedo hacer con la mónada Id porque no hay dependencias que inyectar?
-    val candidateGreenColored: Word = responseStr.zip(candidateStr)
-      .map(pair => Letter(pair._1,
-                          if (pair._1 == pair._2) {
-                            Green} else Black)
-        )
-    val notColoredGreen: Word = candidateGreenColored.filter(!_.isGreen)
-    val remainingOccurrencesToColor = notColoredGreen.toSet
-      .map(letter => (letter.c, notColoredGreen.count(_.whoseCharIs(letter.c)))).toMap
-    val candidateYellowColored: Word = candidateGreenColored.colorItYellow(remainingOccurrencesToColor)
+  def evalGuess: (String, String) => Word
 
-    println(candidateYellowColored)
-    candidateYellowColored
-  }
-
-  def evalGuessReader: Reader[(String, String) ,Word] = {
-    for {
-      wordGreenColored <- Reader((responseStr, candidateStr: (String, String)) =>
-      responseStr.zip(candidateStr).map(pair => if (pair._1 == pair._2) {
-          Letter(pair._1, Green)
-        } else Letter(pair._1, Black))
-      )
-    } yield
-  }
-
-  def attempt(responseStr: String, candidateStr: String): Either[Exception, Word] =
+  def attempt(responseStr: String, candidateStr: String)
+             (implicit dict: List[String]): Either[Exception, Word] =
     if (responseStr.length != candidateStr.length) {
       Left(new Exception("Lenghts do not match"))
     } else {
-      if (!implicitly[List[String]].contains(candidateStr)){
+      if (!dict.contains(candidateStr)){
         Left(new Exception("Word is not contained in the dictionary"))
       } else {
         Right(evalGuess(responseStr, candidateStr))
       }
     }
 
-  def guess(wordc: String): State[WordleState, Word] = {
+  def runGame(wordc: String): State[WordleState, Word] = {
     /* usar algo como iterate aquí */
     for {
       word <- inspect((tablero: WordleState) => evalGuess(tablero.hiddenWord, wordc))
@@ -61,4 +36,38 @@ object WordleAPI {
     } yield word
   }
 
+}
+
+object WordleAPI {
+
+  def colorItGreen(target: String, reference: String): Word =
+    target.zip(reference)
+      .map(pair => Letter(pair._1,
+        if (pair._1 == pair._2) {
+          Green
+        } else Black)
+      )
+
+  def evalGuessState: State[BagWordState, Word] = {
+    for {
+      hiddenWordGreenColored <- inspect { case BagWordState(hiddenWord, candidateWord, _) =>
+        colorItGreen(hiddenWord.toString, candidateWord.toString)
+      }
+      candidateGreenColored <- inspect { case BagWordState(hiddenWord, candidateWord, _) =>
+        colorItGreen(candidateWord.toString, hiddenWord.toString)
+      }
+      _ <- modify { bag: BagWordState =>
+        bag.copy(
+          hiddenWord = hiddenWordGreenColored.filter(!_.isGreen))
+      }
+      remainingOccurrencesToColor <- inspect { case BagWordState(hiddenWithoutGreen, _, _) =>
+        hiddenWithoutGreen.toSet
+          .map(letter => (letter.c, hiddenWithoutGreen.count(_.whoseCharIs(letter.c)))).toMap
+      }
+    } yield candidateGreenColored.colorItYellow(remainingOccurrencesToColor)
+  }
+
+  def evalGuess(responseStr: String, candidateStr: String): Word = {
+    evalGuessState.runA(BagWordState(responseStr.toBlackWord, candidateStr.toBlackWord, Map.empty)).value
+  }
 }
