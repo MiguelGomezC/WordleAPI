@@ -10,29 +10,27 @@ object WordleAPI {
     /* [G] coincidentes por posición
     * [Y] Dada una letra, min(conjunto(candidata), conjunto(oculta)) - coloreadas verdes */
     // READER. igual hasta lo puedo hacer con la mónada Id porque no hay dependencias que inyectar?
-    val wordGreenColored: Word = responseStr.zip(candidateStr)
-      .map(pair => if (pair._1 == pair._2) {
-                      Letter(pair._1, Green)
-                    } else Letter(pair._1, Black))
-    val commonOcurrences: Map[Char, Int] = responseStr.toSet.map(charac =>
-      (charac, responseStr.count(_==charac)
-        .min(candidateStr.count(_==charac)))).toMap
-    val numberOfGreenColored: Map[Char, Int] = responseStr.toSet.map(charac =>
-      (charac, wordGreenColored.filter(_.color==Green).count(_.c==charac))).toMap
-    val numberOfOccurencesToColorYellow: Map[Char, Int] = commonOcurrences
-      .map{case (key,value) => (key, value - numberOfGreenColored.getOrElse(key, 0))}
-    val wordYellowColored: Word = wordGreenColored.colorItYellow(numberOfOccurencesToColorYellow)
+    val candidateGreenColored: Word = responseStr.zip(candidateStr)
+      .map(pair => Letter(pair._1,
+                          if (pair._1 == pair._2) {
+                            Green} else Black)
+        )
+    val notColoredGreen: Word = candidateGreenColored.filter(!_.isGreen)
+    val remainingOccurrencesToColor = notColoredGreen.toSet
+      .map(letter => (letter.c, notColoredGreen.count(_.whoseCharIs(letter.c)))).toMap
+    val candidateYellowColored: Word = candidateGreenColored.colorItYellow(remainingOccurrencesToColor)
 
-    println(wordYellowColored)
-    wordYellowColored
+    println(candidateYellowColored)
+    candidateYellowColored
   }
 
   def evalGuessReader: Reader[(String, String) ,Word] = {
     for {
-      wordGreenColored <- Reader(case (responseStr: String, candidateStr: String) =>
+      wordGreenColored <- Reader((responseStr, candidateStr: (String, String)) =>
       responseStr.zip(candidateStr).map(pair => if (pair._1 == pair._2) {
           Letter(pair._1, Green)
-        } else Letter(pair._1, Black)))
+        } else Letter(pair._1, Black))
+      )
     } yield
   }
 
