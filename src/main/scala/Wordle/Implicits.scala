@@ -10,6 +10,11 @@ trait Implicits {
     def toBlackWord: Word = str.map((char: Char) => Letter(char, Black))
   }
 
+  implicit class greenCheck(letter: Letter) {
+    def isGreen: Boolean = letter.color == Green
+    def whoseCharIs(charac: Char): Boolean = letter.c == charac
+  }
+
   implicit val wordleDictionary: List[String] =
     Using(Source.fromResource("es.txt")){ source =>
       source.getLines.toList
@@ -17,4 +22,5 @@ trait Implicits {
 
   implicit val defaultHiddenWord: Word =
     "LUMEN".toBlackWord
+
 }
