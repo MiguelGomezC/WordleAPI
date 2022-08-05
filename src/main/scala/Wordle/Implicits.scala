@@ -31,9 +31,12 @@ trait Implicits {
   }
 
   implicit class WordUtils(word: Word) {
-    override def toString: String = word.map(_.c).toString
-    def showcaseHidden: Unit = println(word.map{_ => Letter('*', Black) })
-
+    override def toString: String =
+      word.map(_.c).toString
+    def showcaseHidden: Word =
+      word.map{_ => Letter('*', Black) }
+    def guessed: Boolean =
+        word.forall(_.color == Green)
   }
 
   implicit class greenCheck(letter: Letter) {

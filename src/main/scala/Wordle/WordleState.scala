@@ -11,7 +11,7 @@ object WordleState {
   def initial(hiddenWordc: String): WordleState = {
     /* Set initial state */
     WordleState(
-      table = IndexedSeq.empty,
+      table = List.empty,
       hiddenWord = hiddenWordc
     )
   }
