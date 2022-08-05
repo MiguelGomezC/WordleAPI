@@ -1,6 +1,3 @@
-import cats.data.State
-import cats.implicits._
-
 package object Wordle extends Implicits {
 
   type Word = IndexedSeq[Letter]
@@ -32,24 +29,5 @@ package object Wordle extends Implicits {
 
     def containsSuch(k: K)(p: V => Boolean): Boolean =
       m.get(k).exists(p)
-
-  }
-
-  implicit class YellowColoredWord(wordc: Word) {
-    def colorItYellow(occurrencesToColor: Map[Char, Int]): Word = {
-      wordc.toList.traverse {
-        (letter: Letter) => State.modify[TagState]{
-          case TagState(tagged: Word, bag: Map[Char, Int]) =>
-            val isGreen = !letter.color.equals(Green)
-            TagState(
-              tagged
-                .mapAs(_ :+ letter)
-                .mapIf(isGreen & bag.containsSuch(letter.c)(_>0))(_ :+ letter.copy(color = Yellow)),
-              bag
-                .mapIf(isGreen & bag.containsSuch(letter.c)(_>0))(_ => bag.modify(letter.c)(_-1))
-            )
-        }
-      }.inspect(_.tagged).runA(TagState("".toBlackWord, occurrencesToColor)).value
-    }
   }
 }
