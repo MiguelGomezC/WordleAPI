@@ -49,23 +49,6 @@ object WordleAPI {
           }
         ))))
   }
-  /*
-  def consoleAttempt(responseStr: String): IO[Word] = {
-    for {
-      _ <- putStrLn(
-        s"Hidden word: ${responseStr.toBlackWord.showcaseHidden}. \n" +
-        "Please, provide a new guess: ")
-      candidateStr <- readLn
-      comparison <- IO(attemptComparison(responseStr, candidateStr))
-    } yield comparison.fold[Word](
-      (e: Exception) => {
-        putStrLn(e.toString)
-          .map(_ => consoleAttempt(responseStr).unsafeRunSync).unsafeRunSync
-      },
-      identity
-    )
-  }
-   */
 
   /*
   def retry[T](op: => Try[T])(onWrong: Throwable => Any): T =
@@ -73,15 +56,6 @@ object WordleAPI {
       case Success(t) => Some(t)
       case Failure(f) => onWrong(f); None
     }.toSeq.head
-   */
-
-  /*
-  @tailrec
-  def attempt(responseStr: String, candidateStr: String): Word =
-    attemptComparison(responseStr, candidateStr) match {
-      case Left(msg) => println(msg); attempt(responseStr, candidateStr)
-      case Right(word) => word
-    }
    */
 
   def run(responseStr: String): Unit = {

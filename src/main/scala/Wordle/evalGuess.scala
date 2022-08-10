@@ -2,14 +2,9 @@ package Wordle
 
 import cats.data.State
 import cats.data.State.{inspect, modify}
+import cats.implicits._
 
 object evalGuess {
-
-  def colorItGreen(target: String, reference: String): Word =
-    target.zip(reference)
-      .map {case (t,r) => Letter(t, if (t==r) {
-                                    Green} else Black)
-      }
 
   def initial(responseStr: String, candidateStr: String): BagWordState =
     BagWordState(responseStr.toBlackWord, candidateStr.toBlackWord, Map.empty)
@@ -20,20 +15,38 @@ object evalGuess {
 
   def evalGuessState: State[BagWordState, Word] = {
     for {
-      hiddenWordGreenColored <- inspect[BagWordState, Word] { case BagWordState(hiddenWord, candidateWord, _) =>
-        colorItGreen(hiddenWord.toString, candidateWord.toString)
-      }
-      candidateGreenColored <- inspect[BagWordState,Word] { case BagWordState(hiddenWord, candidateWord, _) =>
-        colorItGreen(candidateWord.toString, hiddenWord.toString)
-      }
-      _ <- modify { bag: BagWordState =>
-        bag.copy(
-          hiddenWord = hiddenWordGreenColored.filter(!_.isGreen))
-      }
-      remainingOccurrencesToColor <- inspect[BagWordState, Map[Char,Int]]{ case BagWordState(hiddenWithoutGreen, _, _) =>
-        hiddenWithoutGreen.toSet
-          .map((letter: Letter) => (letter.c, hiddenWithoutGreen.count(_.whoseCharIs(letter.c)))).toMap
-      }
-    } yield candidateGreenColored.colorItYellow(remainingOccurrencesToColor)
+      hiddenWordInit <- inspect[BagWordState, Word]{bagWordState => bagWordState.hiddenWord}
+      candidateWordInit <- inspect[BagWordState, Word]{bagWordState => bagWordState.candidateWord}
+      candidateGreenColored <- hiddenWordInit.zip(candidateWordInit).toList.traverse {
+        case (h,c) => modify[BagWordState]{
+          case BagWordState(hiddenWord: Word, candidateWord: Word, bag: Map[Char, Int]) =>
+            val coinciding = h.whoseCharIs(c.c)
+            BagWordState(
+              hiddenWord
+                .mapIf(coinciding)(_ :+ h.copy(color = Green))
+                .mapIf(!coinciding)(_ :+ h.copy(color = Black)),
+              candidateWord
+                .mapIf(coinciding)(_ :+ c.copy(color = Green))
+                .mapIf(!coinciding)(_ :+ c.copy(color = Black)),
+              bag
+                .mapIf(!coinciding)(_ => bag.modifyOrAdd(h.c)(1, _+1))
+            )
+        }
+      }.inspect(_.hiddenWord)
+      candidateYellowColored <- candidateGreenColored.toList.traverse {
+        (letter: Letter) => modify[BagWordState]{
+          case BagWordState(hiddenWord: Word, candidateWord: Word, bag: Map[Char, Int]) =>
+            val isGreen = !letter.color.equals(Green)
+            BagWordState(
+              hiddenWord,
+              candidateWord
+                .mapAs(_ :+ letter)
+                .mapIf(isGreen & bag.containsSuch(letter.c)(_>0))(_ :+ letter.copy(color = Yellow)),
+              bag
+                .mapIf(isGreen & bag.containsSuch(letter.c)(_>0))(_ => bag.modify(letter.c)(_-1))
+            )
+        }
+      }.inspect(_.candidateWord)
+    } yield candidateYellowColored
   }
 }
