@@ -35,6 +35,22 @@ object WordleAPI {
 
   /* @tailrec */
   def consoleAttempt(responseStr: String): IO[Word] = {
+    putStrLn(s"Hidden word: ${responseStr.toBlackWord.showcaseHidden}. \n" +
+        "Please, provide a new guess: ").flatMap(_ =>
+      readLn.flatMap((candidateStr: String) =>
+        IO(attemptComparison(responseStr, candidateStr)).flatMap(comparison =>
+        comparison.fold[IO[Word]](
+          (e:Exception) => {
+          putStrLn(e.toString)
+            .flatMap(_ => consoleAttempt(responseStr))
+        },
+          (w: Word) => {
+            putStrLn(s"Provided word was valid. The result is: $w").flatMap(_ => IO.pure(w))
+          }
+        ))))
+  }
+  /*
+  def consoleAttempt(responseStr: String): IO[Word] = {
     for {
       _ <- putStrLn(
         s"Hidden word: ${responseStr.toBlackWord.showcaseHidden}. \n" +
@@ -49,6 +65,8 @@ object WordleAPI {
       identity
     )
   }
+   */
+
   /*
   def retry[T](op: => Try[T])(onWrong: Throwable => Any): T =
     Iterator.continually(op).flatMap {
@@ -88,5 +106,4 @@ object WordleAPI {
     } yield word
   }
    */
-
 }
