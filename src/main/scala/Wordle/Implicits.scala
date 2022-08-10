@@ -1,7 +1,5 @@
 package Wordle
 
-import cats.data.State
-import cats.implicits._
 import scala.io.Source
 import scala.util.Using
 
@@ -9,21 +7,31 @@ import scala.util.Using
 trait Implicits {
 
   implicit class WordFromString(str: String) {
-    def toBlackWord: Word = str.map((char: Char) => Letter(char, Black))
+    def toBlackWord: Word = str.map(Letter(_, Black))
   }
 
   implicit class WordUtils(word: Word) {
-    override def toString: String =
-      word.map(_.c).toString
+    def prettyString: String = {
+      val ansiGreen = "\u001B[32m"
+      val ansiYellow = "\u001B[33m"
+      val ansiReset = "\u001B[0m"
+      word.toList.flatMap{ (letter: Letter) =>
+        letter match {
+          case Letter(c, Green) => ansiGreen + c.toString + ansiReset
+          case Letter(c, Yellow) => ansiYellow + c.toString + ansiReset
+          case Letter(c, Black) => c.toString
+        }
+      }.mkString
+    }
     def showcaseHidden: Word =
-      word.map{_ => Letter('*', Black) }
+      word.map(_ => Letter('*', Black))
     def guessed: Boolean =
         word.forall(_.color == Green)
   }
 
   implicit class greenCheck(letter: Letter) {
     def isGreen: Boolean = letter.color == Green
-    def whoseCharIs(charac: Char): Boolean = letter.c == charac
+    def whoseCharIs(char: Char): Boolean = letter.c == char
     def whoseColorIs(color: Color): Boolean = letter.color == color
   }
 
@@ -33,6 +41,8 @@ trait Implicits {
     }.getOrElse(List())
 
   implicit val defaultHiddenWord: Word =
-    "LUMEN".toBlackWord
+    "lumen".toBlackWord
 
+  implicit val defaultHiddenString: String =
+    "lumen"
 }
