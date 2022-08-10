@@ -1,7 +1,5 @@
 package Wordle
 
-import cats.data.State
-import cats.data.State.{inspect, modify}
 import cats.effect.IO
 import Wordle.evalGuess._
 import cats.effect.unsafe.implicits.global
@@ -21,13 +19,18 @@ case class WordleAPI(responseStr: String, attempts: Table){
 }
 object WordleAPI {
 
+  def apply(responseStr: String): WordleAPI = {
+    /* initial WordleAPI from hiddenWord */
+    WordleAPI(responseStr.toLowerCase, List.empty)
+  }
+
   def attemptComparison(responseStr: String, candidateStr: String)
              (implicit dict: List[String]): Either[Exception, Word] =
     if (responseStr.length != candidateStr.length) {
-      Left(new Exception("Lenghts do not match"))
+      Left(new Exception("Lenghts do not match!"))
     } else {
       if (!dict.contains(candidateStr)){
-        Left(new Exception("Word is not contained in the dictionary"))
+        Left(new Exception("Word is not contained in the dictionary!"))
       } else {
         Right(evalGuess(responseStr, candidateStr))
       }
@@ -35,7 +38,7 @@ object WordleAPI {
 
   /* @tailrec */
   def consoleAttempt(responseStr: String): IO[Word] = {
-    putStrLn(s"Hidden word: ${responseStr.toBlackWord.showcaseHidden}. \n" +
+    putStrLn(s"Hidden word: ${responseStr.toBlackWord.showcaseHidden.prettyString}. \n" +
         "Please, provide a new guess: ").flatMap(_ =>
       readLn.flatMap((candidateStr: String) =>
         IO(attemptComparison(responseStr, candidateStr)).flatMap(comparison =>
@@ -45,7 +48,7 @@ object WordleAPI {
             .flatMap(_ => consoleAttempt(responseStr))
         },
           (w: Word) => {
-            putStrLn(s"Provided word was valid. The result is: $w").flatMap(_ => IO.pure(w))
+            putStrLn(s"Provided word was valid. The result is: ${w.prettyString}").flatMap(_ => IO.pure(w))
           }
         ))))
   }
@@ -59,25 +62,10 @@ object WordleAPI {
    */
 
   def run(responseStr: String): Unit = {
-    var state: WordleAPI = WordleAPI(responseStr, List.empty)
+    var state: WordleAPI = WordleAPI(responseStr)
     while (!state.isFinished) {
+      //IO(state.attempts.flatMap(row => putStrLn(row.prettyString))).unsafeRunSync
       state = state.makeTurn(consoleAttempt(responseStr).unsafeRunSync)
     }
   }
-  /*
-  def runGame(wordc: String): State[WordleState, Word] = {
-    for {
-      word <- inspect((tablero: WordleState) => attempt(tablero.hiddenWord, wordc))
-      _ <- modify((tablero: WordleState) => tablero.copy(table = tablero.table :+ word))
-      word <- inspect((tablero: WordleState) => attempt(tablero.hiddenWord, wordc))
-      _ <- modify((tablero: WordleState) => tablero.copy(table = tablero.table :+ word))
-      word <- inspect((tablero: WordleState) => attempt(tablero.hiddenWord, wordc))
-      _ <- modify((tablero: WordleState) => tablero.copy(table = tablero.table :+ word))
-      word <- inspect((tablero: WordleState) => attempt(tablero.hiddenWord, wordc))
-      _ <- modify((tablero: WordleState) => tablero.copy(table = tablero.table :+ word))
-      word <- inspect((tablero: WordleState) => attempt(tablero.hiddenWord, wordc))
-      _ <- modify((tablero: WordleState) => tablero.copy(table = tablero.table :+ word))
-    } yield word
-  }
-   */
 }
