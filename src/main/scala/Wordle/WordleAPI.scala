@@ -1,7 +1,6 @@
 package Wordle
 
 import cats.effect.IO
-import Wordle.evalGuess._
 import cats.effect.unsafe.implicits.global
 
 case class WordleAPI(responseStr: String, attempts: Table){
@@ -36,7 +35,7 @@ object WordleAPI {
       }
     }
 
-  /* @tailrec */
+  //@tailrec
   def consoleAttempt(responseStr: String): IO[Word] = {
     putStrLn(s"Hidden word: ${responseStr.toBlackWord.showcaseHidden.prettyString}. \n" +
         "Please, provide a new guess: ").flatMap(_ =>
@@ -53,19 +52,8 @@ object WordleAPI {
         ))))
   }
 
-  /*
-  def retry[T](op: => Try[T])(onWrong: Throwable => Any): T =
-    Iterator.continually(op).flatMap {
-      case Success(t) => Some(t)
-      case Failure(f) => onWrong(f); None
-    }.toSeq.head
-   */
-
   def run(responseStr: String): Unit = {
-    var state: WordleAPI = WordleAPI(responseStr)
-    while (!state.isFinished) {
-      //IO(state.attempts.flatMap(row => putStrLn(row.prettyString))).unsafeRunSync
-      state = state.makeTurn(consoleAttempt(responseStr).unsafeRunSync)
-    }
+    whileState[WordleAPI](!_.isFinished)(_.makeTurn(consoleAttempt(responseStr).unsafeRunSync))
+      .runA(WordleAPI(responseStr)).value
   }
 }

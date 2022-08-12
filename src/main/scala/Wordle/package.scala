@@ -1,7 +1,7 @@
-import cats.data.State
 import cats.effect.IO
 
-package object Wordle extends Implicits {
+package object Wordle extends Implicits
+  with While[WordleAPI] with evalGuess {
 
   type Word = IndexedSeq[Letter]
   type Table = List[Word]
@@ -39,12 +39,4 @@ package object Wordle extends Implicits {
   def putStrLn(value: String): IO[Unit] = IO(println(value))
   val readLn: IO[String] = IO(scala.io.StdIn.readLine())
 
-  /*
-  // TODO: use iterateUntil _.isFinished
-  def iterateUntil[A](check: A => Boolean)(from: State[A])(cont: A => State[A]): State[A] = {
-    val flag: Boolean = from.get
-    if (flag) from
-    else iterateUntil()(from.map(cont))(cont)
-  }
-   */
 }
