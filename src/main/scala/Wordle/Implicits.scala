@@ -1,7 +1,5 @@
 package Wordle
 
-import Wordle.Letter.unapply
-
 import scala.io.Source
 import scala.util.Using
 
