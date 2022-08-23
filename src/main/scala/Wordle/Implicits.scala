@@ -6,6 +6,10 @@ import scala.util.Using
 
 trait Implicits {
 
+  implicit class VecFromWord(word: Word) {
+    def toVec: Vector[(Char, Color)] = word.map{case Letter(char, color) => (char,color)}.toVector
+  }
+
   implicit class WordFromString(str: String) {
     def toBlackWord: Word = str.map(Letter(_, Black))
   }
