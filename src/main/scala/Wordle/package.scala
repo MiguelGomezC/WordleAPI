@@ -1,7 +1,7 @@
 import cats.effect.IO
 
 package object Wordle extends Implicits
-  with While[WordleAPI] with evalGuess {
+  with While with evalGuess {
 
   type Word = IndexedSeq[Letter]
   type Table = List[Word]
