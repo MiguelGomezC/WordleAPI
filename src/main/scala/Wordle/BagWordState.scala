@@ -1,5 +1,6 @@
 package Wordle
 
-case class BagWordState(hiddenWord: Word,
-                        candidateWord: Word,
-                        bag: Map[Char, Int])
+case class BagWordState(candidateWord: Word,
+                        bag: Map[Char, Int]){
+  def withEmptyWord: BagWordState = this.copy(candidateWord = "".toBlackWord)
+}

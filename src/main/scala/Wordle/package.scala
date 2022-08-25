@@ -1,7 +1,10 @@
 import cats.effect.IO
 
+import scala.io.Source
+import scala.util.Using
+
 package object Wordle extends Implicits
-  with While with evalGuess {
+  with While with evalGuess with IOApp {
 
   type Word = IndexedSeq[Letter]
   type Table = List[Word]
@@ -34,9 +37,11 @@ package object Wordle extends Implicits
       m.get(k).exists(p)
   }
 
-  /* IO related */
+  /* Read-Write */
 
-  def putStrLn(value: String): IO[Unit] = IO(println(value))
-  val readLn: IO[String] = IO(scala.io.StdIn.readLine())
+  def readResource(name: String): List[String] =
+    Using(Source.fromResource(name)){ source =>
+      source.getLines.toList
+    }.getOrElse(List())
 
 }
