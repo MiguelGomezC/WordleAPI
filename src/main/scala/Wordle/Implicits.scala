@@ -1,9 +1,5 @@
 package Wordle
 
-import scala.io.Source
-import scala.util.Using
-
-
 trait Implicits {
 
   implicit class VecFromWord(word: Word) {
@@ -38,15 +34,4 @@ trait Implicits {
     def whoseCharIs(char: Char): Boolean = letter.c == char
     def whoseColorIs(color: Color): Boolean = letter.color == color
   }
-
-  implicit val wordleDictionary: List[String] =
-    Using(Source.fromResource("es.txt")){ source =>
-      source.getLines.toList
-    }.getOrElse(List())
-
-  implicit val defaultHiddenWord: Word =
-    "lumen".toBlackWord
-
-  implicit val defaultHiddenString: String =
-    "lumen"
 }
