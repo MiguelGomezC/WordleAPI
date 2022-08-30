@@ -12,6 +12,7 @@ trait While{
     inspect(evalB(_)).flatMap(if (_) {repeatState(evalB)(doSomething)}else{modify(identity)}))
   }
 
+  //TODO: tail-recursive
   def whileIO[A](initial: A)(evalB: A => IO[Boolean])
                    (doSomething: A => IO[A]): IO[Unit] = {
     evalB(initial).flatMap(if (_){
