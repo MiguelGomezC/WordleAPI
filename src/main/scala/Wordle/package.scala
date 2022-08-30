@@ -1,10 +1,8 @@
-import cats.effect.IO
-
 import scala.io.Source
 import scala.util.Using
 
 package object Wordle extends Implicits
-  with While with evalGuess with IOApp {
+  with While with evalGuess {
 
   type Word = IndexedSeq[Letter]
   type Table = List[Word]
