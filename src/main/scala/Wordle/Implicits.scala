@@ -29,7 +29,7 @@ trait Implicits extends While {
         word.forall(_.color == Green)
   }
 
-  implicit class greenCheck(letter: Letter) {
+  implicit class wordCheck(letter: Letter) {
     def isGreen: Boolean = letter.color == Green
     def whoseCharIs(char: Char): Boolean = letter.c == char
     def whoseColorIs(color: Color): Boolean = letter.color == color
