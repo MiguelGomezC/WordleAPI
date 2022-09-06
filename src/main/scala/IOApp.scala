@@ -1,5 +1,6 @@
 import Wordle._
 import cats.effect.IO
+import cats.implicits.catsSyntaxMonadIdOps
 
 object IOApp {
 
@@ -37,10 +38,9 @@ object IOApp {
   }
 
   def run(machine: WordleAPI): IO[Unit] = {
-    whileIO(
-      machine)(
-      wordleAPI => IO.pure(!wordleAPI.isFinished))(
-      wordleAPI => console(wordleAPI)
+    machine.iterateWhileM(
+      wordleAPI => console(wordleAPI))(
+      wordleAPI => !wordleAPI.isFinished
     ).flatMap(m => putStrLn(s"Game is over. Target word was ${m.responseStr.prettyMessage}"))
   }
 }
