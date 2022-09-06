@@ -4,7 +4,7 @@ import cats.data.State
 import cats.data.State.{inspect, modify}
 import cats.implicits._
 
-trait evalGuess {
+object evalGuess {
 
   def initialBag(candidateStr: String): BagWordState =
     BagWordState(candidateStr.toBlackWord, Map.empty)

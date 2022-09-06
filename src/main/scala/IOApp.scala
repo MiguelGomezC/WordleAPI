@@ -32,6 +32,6 @@ object IOApp {
       wordleAPI =>
         putStrLn(wordleAPI.showTable).flatMap(_ =>
           console(wordleAPI))
-    ).flatMap(_ => putStrLn("Game is over. Target word was " + machine.responseStr))
+    ).flatMap(m => putStrLn("Game is over. Target word was " + m.responseStr))
   }
 }
