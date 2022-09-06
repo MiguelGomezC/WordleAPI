@@ -3,6 +3,7 @@ package Wordle
 import cats.data.State
 import cats.data.State.{inspect, modify}
 import cats.effect.IO
+import cats.Monad
 
 trait While{
 
@@ -13,11 +14,25 @@ trait While{
   }
 
   //TODO: tail-recursive
+  //@annotation.tailrec
   def whileIO[A](initial: A)(evalB: A => IO[Boolean])
-                   (doSomething: A => IO[A]): IO[Unit] = {
+                   (doSomething: A => IO[A]): IO[A] = {
     evalB(initial).flatMap(if (_){
       doSomething(initial).flatMap(whileIO(_)(evalB)(doSomething))} else {
       IO.pure(initial)
     })
   }
+
+  /*
+  def whileTailrec[A](initial: A)(evalB: A => IO[Boolean])
+                (doSomething: A => IO[A]): IO[A] = {
+    def go(initial:A)(evalB:A => IO[Boolean])(doSomething: A => IO[A])(acc: A): IO[A] ={
+      evalB(initial).flatMap(if (_){
+        doSomething(initial).flatMap(go(_)(evalB)(doSomething))} else {
+        IO.pure(initial)
+      })
+    }
+
+   */
+
 }

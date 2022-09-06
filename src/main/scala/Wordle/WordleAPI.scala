@@ -15,7 +15,7 @@ case class WordleAPI(responseStr: String, dictionary: List[String], attempts: Ta
       if (!this.dictionary.contains(candidateStr)){
         Left(new Exception("Word is not contained in the dictionary!"))
       } else {
-        Right(this.makeTurn(evalGuess(this.responseStr, candidateStr)))
+        Right(this.makeTurn(Wordle.evalGuess.evalGuess(this.responseStr, candidateStr)))
       }
     }
   }
@@ -34,7 +34,6 @@ object WordleAPI {
     /* initial WordleAPI from hiddenWord */
     WordleAPI(responseStr.toLowerCase, dictionary, List.empty)
   }
-
 
   def apply(dictionary: List[String], capSize: Int = 8): WordleAPI = {
     /* set hidden word randomly */

@@ -1,6 +1,6 @@
 package Wordle
 
-trait Implicits {
+trait Implicits extends While {
 
   implicit class VecFromWord(word: Word) {
     def toVec: Vector[(Char, Color)] = word.map{case Letter(char, color) => (char,color)}.toVector

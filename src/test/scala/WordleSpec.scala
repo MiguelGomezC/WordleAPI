@@ -25,7 +25,7 @@ class WordleSpec(tag: (String, String) => Word) extends AnyFlatSpec with Matcher
 object WordleSpec {
   def main(args:Array[String]): Unit = run(
     new WordleSpec(
-      (candidate,response) => Wordle.evalGuess(response, candidate)
+      (candidate,response) => Wordle.evalGuess.evalGuess(response, candidate)
     )
   )
 }
