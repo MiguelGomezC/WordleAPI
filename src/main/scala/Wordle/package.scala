@@ -4,7 +4,6 @@ import scala.util.Using
 package object Wordle extends Implicits {
 
   type Word = IndexedSeq[Letter]
-  type Table = List[Word]
 
   /* Data driven computations */
 

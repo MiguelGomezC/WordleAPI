@@ -26,7 +26,7 @@ trait Implicits {
     def showcaseHidden: Word =
       word.map(_ => Letter('*', Black))
     def guessed: Boolean =
-        word.forall(_.color == Green)
+        false.mapIf(word.nonEmpty)(_ => word.forall(_.color == Green))
   }
 
   implicit class wordCheck(letter: Letter) {

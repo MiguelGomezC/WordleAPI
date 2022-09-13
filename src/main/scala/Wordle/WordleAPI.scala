@@ -2,37 +2,33 @@ package Wordle
 
 import scala.util.Random
 
-case class WordleAPI(responseStr: String, dictionary: List[String], attempts: Table){
+case class WordleAPI(responseStr: String, dictionary: List[String], candidateWord: Word, attempts: Int){
 
   def makeTurn(safeCandidateWord: Word): WordleAPI = {
-    this.copy(attempts = safeCandidateWord :: attempts)
+    this.copy(candidateWord = safeCandidateWord, attempts = attempts + 1)
   }
 
-  def takeTurn(candidateStr: String): Either[Exception, WordleAPI] = {
+  def takeTurn(candidateStr: String): Either[Error, WordleAPI] = {
     if (this.responseStr.length != candidateStr.length) {
-      Left(new Exception("Lenghts do not match!"))
+      Left(LengthMismatch)
     } else {
       if (!this.dictionary.contains(candidateStr)){
-        Left(new Exception("Word is not contained in the dictionary!"))
+        Left(WordNotFound)
       } else {
         Right(this.makeTurn(Wordle.evalGuess.evalGuess(this.responseStr, candidateStr)))
       }
     }
   }
 
-  def showTable: String = this.attempts.reverse.zipWithIndex.map {
-    case (element, index) => s"${(index+1).toString}: ${element.prettyString}"
-  }.mkString(sep = "\n")
-
   def isFinished: Boolean =
-    attempts.length >= 6 || attempts.headOption.exists(_.guessed)
+    attempts >= 6 || candidateWord.guessed
 }
 
 object WordleAPI {
 
   def apply(responseStr: String, dictionary: List[String]): WordleAPI = {
     /* initial WordleAPI from hiddenWord */
-    WordleAPI(responseStr.toLowerCase, dictionary, List.empty)
+    WordleAPI(responseStr.toLowerCase, dictionary, "".toBlackWord, 0)
   }
 
   def apply(dictionary: List[String], capSize: Int = 8): WordleAPI = {
@@ -42,6 +38,6 @@ object WordleAPI {
     val hiddenStr: String = dict(
       random.nextInt(dict.length)
     )
-    WordleAPI(hiddenStr.toLowerCase, dict, List.empty)
+    WordleAPI(hiddenStr.toLowerCase, dict, "".toBlackWord, 0)
   }
 }
