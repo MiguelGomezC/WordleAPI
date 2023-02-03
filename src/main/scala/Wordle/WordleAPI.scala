@@ -1,8 +1,32 @@
 package Wordle
 
+import Machine._
+import cats.Applicative
+
 import scala.util.Random
 
-case class WordleAPI(responseStr: String, dictionary: List[String], candidateWord: Word, attempts: Int){
+trait WordleAPI extends Machine[Either[Error,_]] {
+  type Q = Status
+  val current: Q
+  val wordle: AbstractWordleButtons[Either[Error, _], Q]
+}
+
+object WordleAPI {
+
+  def apply(dictionary: List[String]): WordleAPI = new WordleAPI {
+    val current: Status = Status.apply(dictionary)
+    val wordle: AbstractWordleButtons[Either[Error, _], Status] =
+      AbstractWordleButtons[Either[Error, _], Status](Status(dictionary),
+        str => status => status.next(str),
+        status => status.candidateWord,
+        status => status.attempts)
+  }
+}
+
+
+
+/*
+case class WordleAPI(responseStr: String, dictionary: List[String], candidateWord: Word, attempts: Int) {
 
   def makeTurn(safeCandidateWord: Word): WordleAPI = {
     this.copy(candidateWord = safeCandidateWord, attempts = attempts + 1)
@@ -15,7 +39,7 @@ case class WordleAPI(responseStr: String, dictionary: List[String], candidateWor
       if (!this.dictionary.contains(candidateStr)){
         Left(WordNotFound)
       } else {
-        Right(this.makeTurn(Wordle.evalGuess.evalGuess(this.responseStr, candidateStr)))
+        Right(this.makeTurn(Next.evalGuess.evalGuess(this.responseStr, candidateStr)))
       }
     }
   }
@@ -41,3 +65,4 @@ object WordleAPI {
     WordleAPI(hiddenStr.toLowerCase, dict, "".toBlackWord, 0)
   }
 }
+*/

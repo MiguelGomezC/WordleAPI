@@ -1,4 +1,4 @@
-import org.scalatest.{run, _}
+import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should._
 import Wordle._
@@ -25,7 +25,7 @@ class WordleSpec(tag: (String, String) => Word) extends AnyFlatSpec with Matcher
 object WordleSpec {
   def main(args:Array[String]): Unit = run(
     new WordleSpec(
-      (candidate,response) => Wordle.evalGuess.evalGuess(response, candidate)
+      (candidate,response) => Next.evalGuess.evalGuess(response, candidate)
     )
   )
 }

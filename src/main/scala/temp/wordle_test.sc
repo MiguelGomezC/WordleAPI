@@ -1,4 +1,5 @@
 import Wordle._
+import Wordle.Next.BagWordState
 import cats.data.State.{inspect, modify}
 import cats.data.State
 
